@@ -47,7 +47,6 @@ func (c *Client) GetPokeByName(ctx context.Context, pokemonName string) (Pokemon
 // GetAllPokemon - retrieves a list of all pokemons
 func (c *Client) GetAllPokemon(ctx context.Context) (Pokemonlist, error) {
 	var pokemonlist Pokemonlist
-	var err error
 
 	operation := func() error {
 		req, err := http.NewRequestWithContext(ctx, http.MethodGet, c.config.URL, nil)
@@ -74,8 +73,7 @@ func (c *Client) GetAllPokemon(ctx context.Context) (Pokemonlist, error) {
 		return nil
 	}
 
-	err = Retry(operation)
-	if err != nil {
+	if err := Retry(operation); err != nil {
 		return Pokemonlist{}, err
 	}
 
