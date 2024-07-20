@@ -10,7 +10,6 @@ import (
 // GetPokeByName - retrieves a pokemon data using its name
 func (c *Client) GetPokeByName(ctx context.Context, pokemonName string) (Pokemon, error) {
 	var pokemon Pokemon
-	var err error
 
 	operation := func() error {
 		req, err := http.NewRequestWithContext(ctx, http.MethodGet, fmt.Sprintf("%s/%s", c.config.URL, pokemonName), nil)
@@ -38,8 +37,7 @@ func (c *Client) GetPokeByName(ctx context.Context, pokemonName string) (Pokemon
 		return nil
 	}
 
-	err = Retry(operation)
-	if err != nil {
+	if err := Retry(operation); err != nil {
 		return Pokemon{}, err
 	}
 

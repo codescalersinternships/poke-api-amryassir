@@ -7,7 +7,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
+	"gotest.tools/assert"
 )
 
 func TestClientGetPokeByName(t *testing.T) {
@@ -15,14 +15,14 @@ func TestClientGetPokeByName(t *testing.T) {
 		config := LoadConfig()
 		client := NewClient(config)
 		poke, err := client.GetPokeByName(context.Background(), "pikachu")
-		assert.NoError(t, err)
+		assert.NilError(t, err)
 		assert.Equal(t, "pikachu", poke.Name)
 	})
 	t.Run("Return an error if pokemon does not exist", func(t *testing.T) {
 		config := LoadConfig()
 		client := NewClient(config)
 		_, err := client.GetPokeByName(context.Background(), "non-existant-pokemon")
-		assert.Error(t, err)
+		assert.Error(t, err, err.Error())
 	})
 	t.Run("Can hit locally running server", func(t *testing.T) {
 		ts := httptest.NewServer(
@@ -33,10 +33,10 @@ func TestClientGetPokeByName(t *testing.T) {
 		)
 		defer ts.Close()
 
-		config := Config{URL: ts.URL + "/"}
+		config := Config{URL: ts.URL}
 		client := NewClient(config)
 		poke, err := client.GetPokeByName(context.Background(), "pikachu")
-		assert.NoError(t, err)
+		assert.NilError(t, err)
 		assert.Equal(t, "pikachu", poke.Name)
 		assert.Equal(t, 10, poke.Height)
 	})
@@ -55,10 +55,13 @@ func TestClientGetAllPokemon(t *testing.T) {
 		config := Config{URL: ts.URL}
 		client := NewClient(config)
 		pokemonlist, err := client.GetAllPokemon(context.Background())
-		assert.NoError(t, err)
-		assert.Equal(t, 1, len(pokemonlist.Results))
-		assert.Equal(t, "pikachu", pokemonlist.Results[0].Name)
-		assert.Equal(t, 10, pokemonlist.Results[0].Height)
+		assert.NilError(t, err)
+		expected := Pokemonlist{
+			Results: []Pokemon{
+				{Name: "pikachu", Height: 10},
+			},
+		}
+		assert.DeepEqual(t, expected, pokemonlist)
 	})
 
 	t.Run("Return an error if status code is not OK", func(t *testing.T) {
@@ -72,6 +75,6 @@ func TestClientGetAllPokemon(t *testing.T) {
 		config := Config{URL: ts.URL}
 		client := NewClient(config)
 		_, err := client.GetAllPokemon(context.Background())
-		assert.Error(t, err)
+		assert.Error(t, err, err.Error())
 	})
 }
